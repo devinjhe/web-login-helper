@@ -1,53 +1,55 @@
-# CLAUDE.md — Web Login Helper
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Commands
+
 ```bash
 npm install       # install dependencies
 npm run build     # production build → dist/
 npm run dev       # watch mode (rebuilds on file changes)
 ```
 
-## Loading the extension in Chrome
-1. Go to `chrome://extensions`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked** → select the `dist/` folder
-4. After any code change: run `npm run build`, then click the refresh icon on the extension card
+After any code change, reload the extension in Chrome: go to `chrome://extensions` and click the refresh icon on the "Web Login Helper" card.
 
-## Architecture
+## Environment
 
-```
-src/
-  popup/
-    popup.html      # extension popup shell
-    popup.ts        # all popup logic and rendering
-    popup.css       # popup styles
-  lib/
-    supabase.ts     # initialises Supabase client from VITE_SUPABASE_* env vars
-    storage.ts      # typed CRUD helpers: getLoginsForDomain, addLogin, updateLogin, deleteLogin
-  background.ts     # service worker: tracks login page detections, manages badge
-  content.ts        # injected into all pages: detects login pages, sends message to background
-manifest.json       # MV3 manifest
-```
-
-## Message flow
-- `content.ts` → `background.ts`: `LOGIN_PAGE_DETECTED` (with domain)
-- `popup.ts` → `background.ts`: `GET_LOGIN_PAGE_STATE` (returns `{ detected: boolean }`)
-- `popup.ts` → `background.ts`: `CLEAR_BADGE`
-
-## Environment variables
-Copy `.env.example` to `.env` and fill in:
+Copy `.env.example` to `.env` and fill in Supabase credentials from **Project Settings → API**:
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-public-key-here
 ```
 
-## Database schema
+Vite injects these at build time via `import.meta.env`.
+
+## Architecture
+
+The extension has three entry points, each built independently by `vite-plugin-web-extension`:
+
+- **`src/popup/popup.ts`** — all popup logic. Queries the active tab URL, calls the storage layer, and renders one of three states: `has-logins`, `prompt` (login page detected, no saved logins), or `empty`. Uses event delegation on a single `click` listener. No framework — pure DOM manipulation via `innerHTML`.
+- **`src/background.ts`** — service worker. Maintains a `Set<tabId>` of tabs where a login page was detected. Manages the badge (`!` in amber). Responds to `GET_LOGIN_PAGE_STATE` messages from the popup.
+- **`src/content.ts`** — injected into every page. Runs three heuristics to detect login pages (URL path, social sign-in buttons, email+password inputs). Fires once on load; sends `LOGIN_PAGE_DETECTED` to the background if matched.
+
+### Message protocol (popup ↔ background)
+
+| Message type | Direction | Purpose |
+|---|---|---|
+| `LOGIN_PAGE_DETECTED` | content → background | Login page found; background sets badge |
+| `GET_LOGIN_PAGE_STATE` | popup → background | Ask if current tab is a login page |
+| `CLEAR_BADGE` | popup → background | User saved a login; clear the badge |
+
+### Storage layer (`src/lib/`)
+
+`supabase.ts` initialises the client once. `storage.ts` is the only place that touches the database — all other code imports from there. The `Login` type is the source of truth for the DB row shape.
+
+## Database
+
 ```sql
 CREATE TABLE logins (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  domain text NOT NULL,
-  method text NOT NULL,
-  identifier text,
+  domain text NOT NULL,   -- e.g. "github.com" (www. stripped)
+  method text NOT NULL,   -- e.g. "Google", "GitHub", "Email"
+  identifier text,        -- optional email/username
   notes text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -55,4 +57,5 @@ CREATE TABLE logins (
 ```
 
 ## Backlog
-See `BACKLOG.md` for planned features.
+
+See `BACKLOG.md` for planned features (edit UI, delete confirmation, notes in UI, auto-open popup on detection).
