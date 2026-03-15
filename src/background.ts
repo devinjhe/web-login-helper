@@ -17,18 +17,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     return;
   }
 
-  if (message.type === "GET_LOGIN_PAGE_STATE") {
-    // Respond to popup asking if current tab has a login page
-    // We need to query the active tab from here
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTabId = tabs[0]?.id;
-      const detected = activeTabId !== undefined && loginPageTabs.has(activeTabId);
-      // Note: sendResponse must be called synchronously in the listener,
-      // but we need async. We handle this via a separate message flow.
-    });
-    return;
-  }
-
   if (message.type === "CLEAR_BADGE") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTabId = tabs[0]?.id;
@@ -41,7 +29,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   }
 });
 
-// Handle GET_LOGIN_PAGE_STATE with sendResponse (must be synchronous return true)
+// GET_LOGIN_PAGE_STATE must be in its own listener so it can return true (keeps channel open for async sendResponse)
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "GET_LOGIN_PAGE_STATE") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
