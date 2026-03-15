@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Web Login Helper",
+  "version": "1.0.0",
+  "description": "Remember which login method you use on each website",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Web Login Helper"
+  },
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.ts"]
+    }
+  ]
+}
