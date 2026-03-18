@@ -26,7 +26,30 @@ Vite injects these at build time via `import.meta.env`.
 
 The extension has three entry points, each built independently by `vite-plugin-web-extension`:
 
-- **`src/popup/popup.ts`** — all popup logic. Queries the active tab URL, calls the storage layer, and renders one of three states: `has-logins`, `prompt` (login page detected, no saved logins), or `empty`. Uses event delegation on a single `click` listener. No framework — pure DOM manipulation via `innerHTML`.
+- **`src/popup/popup.ts`** — all popup logic. Queries the active tab URL, calls the storage layer, and renders one of seven states via a `render()` switch:
+
+  | State | Description |
+  |---|---|
+  | `loading` | Initial fetch in progress |
+  | `error` | Unrecoverable error with message |
+  | `has-logins` | One or more saved logins for the domain; optionally shows the add form (`showForm: boolean`) |
+  | `prompt` | Login page detected, no saved logins yet |
+  | `empty` | No logins, no login page detected |
+  | `confirm-delete` | Inline confirmation strip; holds `loginId`, `loginMethod`, and `prevState` to restore on cancel |
+  | `edit-login` | Edit form pre-filled with an existing `Login`; holds `prevState` to restore on cancel |
+
+  Uses event delegation on a single `click` listener. No framework — pure DOM manipulation via `innerHTML`.
+
+  Key render helpers:
+  - `renderForm(login?: Login)` — shared add/edit form. Without an argument it renders a blank form with `data-action="save-login"`; with a `Login` it pre-fills all fields and uses `data-action="save-edit" data-id="..."`.
+  - `renderLoginList()` — each item shows method, identifier (if set), notes (if set), and dates. "Added [date]" always shown; "· Edited [date]" appended when `updated_at` differs from `created_at` by more than 1 minute.
+  - `renderConfirmDelete()` — red-tinted strip with Cancel / Delete buttons; no DB call until confirmed.
+
+  Async handlers:
+  - `handleSave()` — calls `addLogin()`, then `loadData()`
+  - `handleUpdate(id)` — calls `updateLogin()`, then `loadData()`
+  - `handleDelete(id)` — calls `deleteLogin()`, then `loadData()`
+
 - **`src/background.ts`** — service worker. Maintains a `Set<tabId>` of tabs where a login page was detected. Manages the badge (`!` in amber). Responds to `GET_LOGIN_PAGE_STATE` messages from the popup.
 - **`src/content.ts`** — injected into every page. Runs three heuristics to detect login pages (URL path, social sign-in buttons, email+password inputs). Fires once on load; sends `LOGIN_PAGE_DETECTED` to the background if matched.
 
@@ -40,7 +63,7 @@ The extension has three entry points, each built independently by `vite-plugin-w
 
 ### Storage layer (`src/lib/`)
 
-`supabase.ts` initialises the client once. `storage.ts` is the only place that touches the database — all other code imports from there. The `Login` type is the source of truth for the DB row shape.
+`supabase.ts` initialises the client once. `storage.ts` is the only place that touches the database — all other code imports from there. The `Login` type is the source of truth for the DB row shape. Exported functions: `getLoginsForDomain`, `addLogin`, `updateLogin`, `deleteLogin`.
 
 ## Database
 
@@ -58,4 +81,4 @@ CREATE TABLE logins (
 
 ## Backlog
 
-See `BACKLOG.md` for planned features (edit UI, delete confirmation, notes in UI, auto-open popup on detection).
+See `BACKLOG.md` for planned features (auto-open popup on detection, automated tests).

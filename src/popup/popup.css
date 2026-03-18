@@ -99,6 +99,18 @@ main {
   text-overflow: ellipsis;
 }
 
+.login-notes {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.login-dates {
+  font-size: 10px;
+  color: #cbd5e1;
+}
+
 .login-item-actions {
   display: flex;
   gap: 4px;
@@ -125,6 +137,56 @@ main {
 .btn-icon.delete:hover {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.btn-icon.edit:hover {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+/* Delete confirmation strip */
+.confirm-delete-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 10px 12px;
+  gap: 8px;
+}
+
+.confirm-delete-text {
+  font-size: 13px;
+  color: #be123c;
+}
+
+.confirm-delete-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.btn-danger {
+  padding: 8px 12px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
 }
 
 /* Add another button */
