@@ -8,7 +8,7 @@ function extractDomain(url: string): string {
   }
 }
 
-function isLoginPage(): boolean {
+export function isLoginPage(): boolean {
   const url = window.location.href.toLowerCase();
   const path = window.location.pathname.toLowerCase();
 

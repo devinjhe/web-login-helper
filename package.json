@@ -6,13 +6,19 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.260",
+    "@vitest/coverage-v8": "^4.1.6",
+    "jsdom": "^29.1.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
-    "vite-plugin-web-extension": "^4.1.1"
+    "vite-plugin-web-extension": "^4.1.1",
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7"

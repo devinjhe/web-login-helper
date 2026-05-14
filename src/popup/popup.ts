@@ -13,7 +13,7 @@ type AppState =
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function extractDomain(url: string): string {
+export function extractDomain(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
@@ -42,7 +42,7 @@ async function isLoginPageDetected(): Promise<boolean> {
   });
 }
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -50,7 +50,7 @@ function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function datesAreDifferent(created: string, updated: string): boolean {
+export function datesAreDifferent(created: string, updated: string): boolean {
   return Math.abs(new Date(updated).getTime() - new Date(created).getTime()) > 60_000;
 }
 
@@ -64,7 +64,7 @@ function renderError(message: string): string {
   return `<div class="error-banner">⚠ ${message}</div>`;
 }
 
-function renderLoginList(logins: Login[], domain: string, showForm: boolean): string {
+export function renderLoginList(logins: Login[], domain: string, showForm: boolean): string {
   const items = logins
     .map(
       (l) => `
@@ -95,7 +95,7 @@ function renderLoginList(logins: Login[], domain: string, showForm: boolean): st
   `;
 }
 
-function renderConfirmDelete(loginId: string, loginMethod: string): string {
+export function renderConfirmDelete(loginId: string, loginMethod: string): string {
   return `
     <div class="confirm-delete-strip">
       <span class="confirm-delete-text">Delete <strong>${escapeHtml(loginMethod)}</strong>?</span>
@@ -107,7 +107,7 @@ function renderConfirmDelete(loginId: string, loginMethod: string): string {
   `;
 }
 
-function renderPrompt(domain: string, loginPageDetected: boolean): string {
+export function renderPrompt(domain: string, loginPageDetected: boolean): string {
   const banner = loginPageDetected
     ? `<div class="detection-banner">🔑 Login page detected for <strong>${escapeHtml(domain)}</strong></div>`
     : "";
@@ -122,7 +122,7 @@ function renderPrompt(domain: string, loginPageDetected: boolean): string {
   `;
 }
 
-function renderEmpty(domain: string): string {
+export function renderEmpty(domain: string): string {
   return `
     <div class="empty-state">
       <div class="empty-state-icon">🔐</div>
@@ -132,7 +132,7 @@ function renderEmpty(domain: string): string {
   `;
 }
 
-function renderForm(login?: Login): string {
+export function renderForm(login?: Login): string {
   const methods = ["Google", "GitHub", "Apple", "Email", "Microsoft", "Other"];
   const options = methods
     .map((m) => `<option value="${m}"${login?.method === m ? " selected" : ""}>${m}</option>`)
